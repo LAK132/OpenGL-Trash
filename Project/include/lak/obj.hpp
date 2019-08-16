@@ -53,7 +53,6 @@ namespace lak
 
 #endif // LAK_OBJ_H
 
-#define LAK_OBJ_IMPLEM
 #ifdef LAK_OBJ_IMPLEM
 #ifndef LAK_OBJ_HAS_IMPLEM
 #define LAK_OBJ_HAS_IMPLEM

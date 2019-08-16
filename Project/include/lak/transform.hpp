@@ -30,10 +30,30 @@ SOFTWARE.
 
 #include <cmath>
 #include <type_traits>
+// #include <lak/mstream.hpp>
+
+#ifndef DEBUG
+#   ifdef NDEBUG
+#       define DEBUG(x)
+#   else
+#       include <iostream>
+#       define DEBUG(x) std::cout << __FILE__ << "(" << std::dec << __LINE__ << ") " << x
+#   endif
+#endif
 
 #ifndef LAK_TRANSFORM_MAT4
 #include <glm/mat4x4.hpp>
 #define LAK_TRANSFORM_MAT4 glm::mat4
+#endif
+
+#ifndef LAK_TRANSFORM_VEC3
+#include <glm/vec3.hpp>
+#define LAK_TRANSFORM_VEC3 glm::vec3
+#endif
+
+#ifndef LAK_TRANSFORM_VEC2
+#include <glm/vec2.hpp>
+#define LAK_TRANSFORM_VEC2 glm::vec2
 #endif
 
 #ifndef LAK_TRANSFORM_H
@@ -41,6 +61,35 @@ SOFTWARE.
 
 namespace lak
 {
+    using mat4_t = LAK_TRANSFORM_MAT4;
+    using vec3_t = LAK_TRANSFORM_VEC3;
+    using vec2_t = LAK_TRANSFORM_VEC2;
+
+    // template <>
+    // mstream &operator>><vec3_t &>(mstream &strm, vec3_t &obj)
+    // {
+    //     strm >> obj.x >> obj.y >> obj.z;
+    //     return strm;
+    // }
+    // template <>
+    // mstream &operator<<<vec3_t &>(mstream &strm, vec3_t &obj)
+    // {
+    //     strm << obj.x << obj.y << obj.z;
+    //     return strm;
+    // }
+    // template <>
+    // mstream &operator>><vec2_t &>(mstream &strm, vec2_t &obj)
+    // {
+    //     strm >> obj.x >> obj.y;
+    //     return strm;
+    // }
+    // template <>
+    // mstream &operator<<<vec2_t &>(mstream &strm, vec2_t &obj)
+    // {
+    //     strm << obj.x << obj.y;
+    //     return strm;
+    // }
+
     #if defined(LAK_TRANSFORM_BIGGER_TYPE_ADD)
     template<typename L, typename R>
     using biggerType = decltype(L(0) + R(0));
@@ -65,8 +114,8 @@ namespace lak
         _value_type w;
 
         quaternion_t() : x(_value_type(0)), y(_value_type(0)), z(_value_type(0)), w(_value_type(1)) {}
-        quaternion_t(const _value_type& X, const _value_type& Y, const _value_type& Z, const _value_type& W) : x(X), y(Y), z(Z), w(W) {}
-        quaternion_t(_value_type&& X, _value_type&& Y, _value_type&& Z, _value_type&& W) : x(X), y(Y), z(Z), w(W) {}
+        // quaternion_t(const _value_type& X, const _value_type& Y, const _value_type& Z, const _value_type& W) : x(X), y(Y), z(Z), w(W) {}
+        // quaternion_t(_value_type&& X, _value_type&& Y, _value_type&& Z, _value_type&& W) : x(X), y(Y), z(Z), w(W) {}
         quaternion_t(_value_type X, _value_type Y, _value_type Z, _value_type W) : x(X), y(Y), z(Z), w(W) {}
         quaternion_t(const _value_type XYZW[4]) : x(XYZW[0]), y(XYZW[1]), z(XYZW[2]), w(XYZW[3]) {}
         template<typename R>
@@ -141,6 +190,26 @@ namespace lak
                 case 'w': return &w;
             }
             return nullptr;
+        }
+        template<typename R>
+        bool operator==(const quaternion_t<R>& rhs)
+        {
+            return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+        }
+        template<typename R>
+        bool operator==(quaternion_t<R>&& rhs)
+        {
+            return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+        }
+        template<typename R>
+        bool operator!=(const quaternion_t<R>& rhs)
+        {
+            return x != rhs.x && y != rhs.y && z != rhs.z && w != rhs.w;
+        }
+        template<typename R>
+        bool operator!=(quaternion_t<R>&& rhs)
+        {
+            return x != rhs.x && y != rhs.y && z != rhs.z && w != rhs.w;
         }
         template<typename R>
         biggerType<_value_type, typename std::decay<R>::type> dot(const quaternion_t<R>& rhs)
@@ -238,6 +307,19 @@ namespace lak
         }
     };
 
+    // template <typename T>
+    // mstream &operator>><quaternion_t<T>>(mstream &strm, quaternion_t<T> &obj)
+    // {
+    //     strm >> obj.x >> obj.y >> obj.z >> obj.w;
+    //     return strm;
+    // }
+    // template <typename T>
+    // mstream &operator<<<quaternion_t<T>>(mstream &strm, quaternion_t<T> &obj)
+    // {
+    //     strm << obj.x << obj.y << obj.z << obj.w;
+    //     return strm;
+    // }
+
     typedef quaternion_t<float> quaternionf_t;
     typedef quaternion_t<double> quaterniond_t;
 
@@ -251,18 +333,18 @@ namespace lak
         _qtrn_type dual;
 
         dualquaternion_t() : real(_value_type(0), _value_type(0), _value_type(0), _value_type(1)), dual(_value_type(0), _value_type(0), _value_type(0), _value_type(0)) {}
-        dualquaternion_t(const _qtrn_type& R, const _qtrn_type& D) : real(R), dual(D) {}
-        dualquaternion_t(_qtrn_type&& R, _qtrn_type&& D) : real(R), dual(D) {}
+        // dualquaternion_t(const _qtrn_type& R, const _qtrn_type& D) : real(R), dual(D) {}
+        // dualquaternion_t(_qtrn_type&& R, _qtrn_type&& D) : real(R), dual(D) {}
         dualquaternion_t(_qtrn_type R, _qtrn_type D) : real(R), dual(D) {}
         dualquaternion_t(const _qtrn_type RD[2]) : real(RD[0]), dual(RD[1]) {}
-        dualquaternion_t(
-            const _value_type& rX, const _value_type& rY, const _value_type& rZ, const _value_type& rW, 
-            const _value_type& dX, const _value_type& dY, const _value_type& dZ, const _value_type& dW
-        ) : real(rX, rY, rZ, rW), dual(dX, dY, dZ, dW) {}
-        dualquaternion_t(
-            _value_type&& rX, _value_type&& rY, _value_type&& rZ, _value_type&& rW, 
-            _value_type&& dX, _value_type&& dY, _value_type&& dZ, _value_type&& dW
-        ) : real(rX, rY, rZ, rW), dual(dX, dY, dZ, dW) {}
+        // dualquaternion_t(
+        //     const _value_type& rX, const _value_type& rY, const _value_type& rZ, const _value_type& rW, 
+        //     const _value_type& dX, const _value_type& dY, const _value_type& dZ, const _value_type& dW
+        // ) : real(rX, rY, rZ, rW), dual(dX, dY, dZ, dW) {}
+        // dualquaternion_t(
+        //     _value_type&& rX, _value_type&& rY, _value_type&& rZ, _value_type&& rW, 
+        //     _value_type&& dX, _value_type&& dY, _value_type&& dZ, _value_type&& dW
+        // ) : real(rX, rY, rZ, rW), dual(dX, dY, dZ, dW) {}
         dualquaternion_t(
             _value_type rX, _value_type rY, _value_type rZ, _value_type rW, 
             _value_type dX, _value_type dY, _value_type dZ, _value_type dW
@@ -273,22 +355,59 @@ namespace lak
             real = rot;
             trans.w = _value_type(0);
             dual = _value_type(0.5) * trans * rot;
+            return *this;
         }
         _type& fromRotTrans(_qtrn_type&& rot, _qtrn_type&& trans)
         {
             real = rot;
             trans.w = _value_type(0);
             dual = _value_type(0.5) * trans * rot;
+            return *this;
         }
-        _type& fromRotTrans(_qtrn_type rot, _qtrn_type trans)
+        _type& fromEuler(const _qtrn_type& rot, _qtrn_type trans)
         {
-            real = rot;
+            real.w = cos(rot.w / 2);
+            _value_type srw2 = sin(rot.w / 2);// / sqrt((rot.x*rot.x) + (rot.y*rot.y) + (rot.z*rot.z));
+            real.x = rot.x * srw2;
+            real.y = rot.y * srw2;
+            real.z = rot.z * srw2;
             trans.w = _value_type(0);
-            dual = _value_type(0.5) * trans * rot;
+            dual = _value_type(0.5) * trans * real;
+            return *this;
+        }
+        _type& fromEuler(_qtrn_type&& rot, _qtrn_type&& trans)
+        {
+            real.w = cos(rot.w / 2);
+            _value_type srw2 = sin(rot.w / 2);
+            real.x = rot.x * srw2;
+            real.y = rot.y * srw2;
+            real.z = rot.z * srw2;
+            trans.w = _value_type(0);
+            dual = _value_type(0.5) * trans * real;
+            return *this;
         }
         _qtrn_type rotation()
         {
             return real;
+        }
+        _qtrn_type eulerRotation()
+        {
+            _qtrn_type rtn;
+            rtn.w = acos(real.w) * 2;
+            _value_type srw2 = sin(rtn.w / 2);
+            if(srw2 == 0.0f)
+            {
+                rtn.x = 0.0f;
+                rtn.y = 0.0f;
+                rtn.z = 0.0f;
+            }
+            else
+            {
+                rtn.x = real.x / srw2;
+                rtn.y = real.y / srw2;
+                rtn.z = real.z / srw2;
+            }
+            return rtn;
         }
         _qtrn_type translation()
         {
@@ -296,18 +415,36 @@ namespace lak
             trans.w = _value_type(0);
             return trans;
         }
-        LAK_TRANSFORM_MAT4 transform()
+        mat4_t transform()
         {
             normalize();
             _qtrn_type& trans = translation();
-            _value_type &x = real.x, &y = real.y, &z = real.z, &w = real.w;
+            _value_type &x = real.x, 
+                &y = real.y, 
+                &z = real.z, 
+                &w = real.w;
             const _value_type t = 2;
 
-            return LAK_TRANSFORM_MAT4 {
-                ((w*w) + (x*x)) - ((y*y) + (z*z)), (t*x*y) + (t*w*z), (t*x*z) - (t*w*y), _value_type(0),
-                (t*w*y) - (t*w*z), ((w*w) + (y*y)) - ((x*x) + (z*z)), (t*y*z) + (t*w*x), _value_type(0),
-                (t*x*z) + (t*w*y), (t*y*z) - (t*w*x), ((w*w) + (z*z)) - ((x*x) + (y*y)), _value_type(0),
-                trans.x, trans.y, trans.z, _value_type(1)
+            return mat4_t {
+                (w*w) + (x*x) - (y*y) - (z*z), 
+                (t*x*y) + (t*w*z), 
+                (t*x*z) - (t*w*y), 
+                _value_type(0),
+
+                (t*x*y) - (t*w*z), 
+                (w*w) + (y*y) - (x*x) - (z*z), 
+                (t*y*z) + (t*w*x), 
+                _value_type(0),
+
+                (t*x*z) + (t*w*y), 
+                (t*y*z) - (t*w*x), 
+                (w*w) + (z*z) - (x*x) - (y*y), 
+                _value_type(0),
+
+                trans.x, 
+                trans.y, 
+                trans.z, 
+                _value_type(1)
             };
         }
         _type operator*() // abuse the derefernce operator for conjugate operation
@@ -320,11 +457,11 @@ namespace lak
         }
         _value_type operator~() // magnitude
         {
-            // ||q|| = sqrt(q*(*q))
-            // q1*q2 = q1r*q2r + (q1r*q2d + q1d*q2r)d
-            // q*(*q) = qr*(*qr) + (qr*(*qd) + qd*(*qr))d
-            // q*(*q) = qr*(*qr) + (0)d
-            // ||q|| = ||qr||
+            // ||dq|| = sqrt(dq*(*dq))
+            // dq1*dq2 = dq1.r*dq2.r + (dq1.r*dq2.d + dq1.d*dq2.r)ε
+            // dq*(*dq) = dq.r*(*dq.r) + (dq.r*(*dq.d) + dq.d*(*dq.r))ε
+            // dq*(*dq) = dq.r*(*dq.r) + (0)ε
+            // ||dq|| = ||dq.r||
             return ~real;
         }
         _value_type magnitude()
@@ -357,12 +494,32 @@ namespace lak
             return nullptr;
         }
         template<typename R>
+        bool operator==(const dualquaternion_t<R>& rhs)
+        {
+            return real == rhs.real && dual == rhs.dual;
+        }
+        template<typename R>
+        bool operator==(dualquaternion_t<R>&& rhs)
+        {
+            return real == rhs.real && dual == rhs.dual;
+        }
+        template<typename R>
+        bool operator!=(const dualquaternion_t<R>& rhs)
+        {
+            return real != rhs.real && dual != rhs.dual;
+        }
+        template<typename R>
+        bool operator!=(dualquaternion_t<R>&& rhs)
+        {
+            return real != rhs.real && dual != rhs.dual;
+        }
+        template<typename R>
         quaternion_t<biggerType<_value_type, typename std::decay<R>::type>> dot(const dualquaternion_t<R>& rhs)
         {
             return real.dot(rhs.real);
         }
         template<typename R>
-        quaternion_t<biggerType<_value_type, typename std::decay<R>::type>> dot(const dualquaternion_t<R>& rhs)
+        quaternion_t<biggerType<_value_type, typename std::decay<R>::type>> dot(dualquaternion_t<R>&& rhs)
         {
             return real.dot(rhs.real);
         }
@@ -455,13 +612,27 @@ namespace lak
         }
     };
 
+    // template <typename T>
+    // mstream &operator>><dualquaternion_t<T>>(mstream &strm, dualquaternion_t<T> &obj)
+    // {
+    //     strm >> obj.real >> obj.dual;
+    //     return strm;
+    // }
+    // template <typename T>
+    // mstream &operator<<<dualquaternion_t<T>>(mstream &strm, dualquaternion_t<T> &obj)
+    // {
+    //     strm << obj.real << obj.dual;
+    //     return strm;
+    // }
+
     typedef dualquaternion_t<float> dualquaternionf_t;
     typedef dualquaternion_t<double> dualquaterniond_t;
 }
 
 #endif // LAK_TRANSFORM_H
 
-#define LAK_TRANSFORM_IMPLEM
+// #define LAK_TRANSFORM_IMPLEM
+
 #ifdef LAK_TRANSFORM_IMPLEM
 #ifndef LAK_TRANSFORM_HAS_IMPLEM
 #define LAK_TRANSFORM_HAS_IMPLEM

@@ -33,107 +33,141 @@ namespace lak
     struct stride_vector
     {
         size_t stride = 1;
-        vector<unsigned char> data;
-        stride_vector(){}
-        stride_vector(size_t size)
+        vector<uint8_t> data;
+        stride_vector();
+        stride_vector(size_t size);
+        stride_vector(const stride_vector& other);
+        stride_vector(stride_vector&& other);
+        void init(size_t size);
+        void init(size_t str, size_t size);
+        stride_vector& operator=(const stride_vector& other);
+        stride_vector& operator=(stride_vector&& other);
+        vector<uint8_t> operator[](size_t idx) const;
+        template <typename T> 
+        stride_vector& operator=(const vector<T>& other)
         {
-            init(size);
-        }
-        stride_vector(size_t str, size_t size)
-        {
-            init(str, size);
-        }
-        stride_vector(const stride_vector& other)
-        {
-            stride = other.stride;
-            data = other.data;
-        }
-        stride_vector(stride_vector&& other)
-        {
-            stride = other.stride;
-            data = other.data;
-        }
-        void init(size_t size)
-        {
-            data.reserve(size);
-        }
-        void init(size_t str, size_t size)
-        {
-            stride = str;
-            data.resize(size);
-        }
-        stride_vector& operator=(const stride_vector& other)
-        {
-            stride = other.stride;
-            data = other.data;
-            return *this;
-        }
-        stride_vector& operator=(stride_vector&& other)
-        {
-            return *this = other;
-        }
-        vector<unsigned char> operator[](size_t idx) const
-        {
-            if(stride * idx >= data.size()) return vector<unsigned char>(0);
-            vector<unsigned char> rtn(stride);
-            memcpy(&(rtn[0]), &(data[stride * idx]), stride);
-            return rtn;
-        }
-        template <typename T> stride_vector& operator=(const vector<T>& other)
-        {
-            stride = sizeof(T) / sizeof(unsigned char);
+            stride = sizeof(T) / sizeof(uint8_t);
             data.resize(sizeof(T) * other.size());
             memcpy(&(data[0]), &(other[0]), data.size());
             return *this;
         }
-        template <typename T> stride_vector& operator=(vector<T>&& other)
+        template <typename T> 
+        stride_vector& operator=(vector<T>&& other)
         {
             return *this = other;
         }
-        template <typename T> inline T* get()
+        template <typename T> 
+        inline T* get()
         {
             return (T*)&(data[0]);
         }
-        template <typename T> static stride_vector strideify(const vector<T> other)
+        template <typename T> 
+        static stride_vector strideify(const vector<T> other)
         {
             stride_vector rtn;
             return rtn = other;
         }
-        template <typename T> static stride_vector strideify(vector<T>&& other)
+        template <typename T> 
+        static stride_vector strideify(vector<T>&& other)
         {
             stride_vector rtn;
             return rtn = other;
         }
-        static stride_vector interleave(const vector<stride_vector*>& vecs)
-        {
-            size_t size = 0;
-            size_t maxlen = 0;
-            for(auto it = vecs.begin(); it != vecs.end(); it++)
-            {
-                size += (*it)->data.size();
-                if((*it)->data.size() > maxlen) maxlen = (*it)->data.size() / (*it)->stride;
-            }
-            stride_vector rtn(size);
-            for(size_t i = 0; i < maxlen; i++)
-            {
-                for(auto it = vecs.begin(); it != vecs.end(); it++)
-                {
-                    // stride_vector& svec = **it;
-                    vector<unsigned char>& vec = (**it)[i];
-                    for(auto it2 = vec.begin(); it2 != vec.end(); it2++)
-                    {
-                        rtn.data.push_back(*it2);
-                    }
-                }
-            }
-            return rtn;
-        }
-        static stride_vector interleave(vector<stride_vector*>&& vecs)
-        {
-            stride_vector& rtn = interleave(vecs); // idk if this is required, but better safe than sorry
-            return rtn;
-        }
+        static stride_vector interleave(const vector<stride_vector*>& vecs);
+        static stride_vector interleave(vector<stride_vector*>&& vecs);
     };
 }
 
 #endif // LAK_STRIDE_VECTOR_H
+
+#ifdef LAK_STRIDE_VECTOR_IMPLEM
+#ifndef LAK_STRIDE_VECTOR_HAS_IMPLEM
+#define LAK_STRIDE_VECTOR_HAS_IMPLEM
+
+namespace lak
+{
+    stride_vector::stride_vector(){}
+
+    stride_vector::stride_vector(size_t size)
+    {
+        init(size);
+    }
+
+    stride_vector::stride_vector(const stride_vector &other)
+    {
+        stride = other.stride;
+        data = other.data;
+    }
+
+    stride_vector::stride_vector(stride_vector &&other)
+    {
+        stride = other.stride;
+        data = other.data;
+    }
+
+    void stride_vector::init(size_t size)
+    {
+        stride = 1;
+        data.reserve(size);
+    }
+
+    void stride_vector::init(size_t str, size_t size)
+    {
+        stride = str;
+        data.resize(size);
+    }
+
+    stride_vector &stride_vector::operator=(const stride_vector &other)
+    {
+        stride = other.stride;
+        data = other.data;
+        return *this;
+    }
+
+    stride_vector &stride_vector::operator=(stride_vector &&other)
+    {
+        return *this = other;
+    }
+
+    vector<uint8_t> stride_vector::operator[](size_t idx) const
+    {
+        if(stride * idx >= data.size()) return vector<uint8_t>(0);
+        vector<uint8_t> rtn(stride);
+        memcpy(&rtn[0], &data[stride * idx], stride);
+        return rtn;
+    }
+
+    stride_vector stride_vector::interleave(const vector<stride_vector*>& vecs)
+    {
+        size_t size = 0;
+        size_t maxlen = 0;
+        for(auto it = vecs.begin(); it != vecs.end(); it++)
+        {
+            size += (*it)->data.size();
+            if((*it)->data.size() > maxlen) maxlen = (*it)->data.size() / (*it)->stride;
+        }
+        stride_vector rtn(size);
+        for(size_t i = 0; i < maxlen; i++)
+        {
+            for(auto it = vecs.begin(); it != vecs.end(); it++)
+            {
+                // stride_vector& svec = **it;
+                vector<uint8_t>& vec = (**it)[i];
+                for(auto it2 = vec.begin(); it2 != vec.end(); it2++)
+                {
+                    rtn.data.push_back(*it2);
+                }
+            }
+        }
+        return rtn;
+    }
+
+    stride_vector stride_vector::interleave(vector<stride_vector*>&& vecs)
+    {
+        stride_vector& rtn = interleave(vecs); // idk if this is required, but better safe than sorry
+        return rtn;
+    }
+}
+
+#endif // LAK_STRIDE_VECTOR_HAS_IMPLEM
+#endif // LAK_STRIDE_VECTOR_IMPLEM
