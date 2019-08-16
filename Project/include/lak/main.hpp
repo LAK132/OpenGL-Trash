@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include <vector>
+
 #ifndef DEBUG
 #   ifdef NDEBUG
 #       define DEBUG(x)
@@ -52,6 +54,7 @@ SOFTWARE.
 
 namespace lak
 {
+    using std::vector;
     #ifdef LAK_MAIN_MULTITHREAD
     using std::thread;
     using std::atomic;
@@ -73,6 +76,8 @@ namespace lak
         queue_t eventq;
         #endif // LAK_MAIN_SDL
         #else
+        bool updateNeedsContext = false;
+        const bool updateHasContext = true;
         bool running;
         #endif // LAK_MAIN_MULTITHREAD
 

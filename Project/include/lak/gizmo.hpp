@@ -36,9 +36,12 @@ namespace lak
     {
     // private:
         LAK_SPACE_MAT4 modelmat;
+        LAK_SPACE_MAT4 projview;
         bool isInit = false;
         mesh_t mesh;
         void init();
+        void init(const LAK_SPACE_MAT4& pv);
+        void init(LAK_SPACE_MAT4&& pv);
     public:
         gizmo_t();
         ~gizmo_t();
@@ -69,6 +72,7 @@ namespace lak
         void update(const LAK_SPACE_MAT4& from, LAK_SPACE_MAT4&& to);
         void update(LAK_SPACE_MAT4&& from, LAK_SPACE_MAT4&& to);
 
+        void draw();
         void draw(const LAK_SPACE_MAT4& projview);
         void draw(LAK_SPACE_MAT4&& projview);
     };
@@ -152,7 +156,9 @@ uniform mat4 model;
 out vec4 fColor;
 void main()
 {
-    gl_Position = projview * model * vPosition;
+    vec4 fPosition = projview * model * vPosition;
+    fPosition.z = 0;
+    gl_Position = fPosition;
     fColor = vColor;
 })", R"(
 #version 330 core
@@ -164,6 +170,18 @@ void main()
 })");
     }
 
+    void gizmo_t::init(const LAK_SPACE_MAT4& pv)
+    {
+        projview = pv;
+        init();
+    }
+
+    void gizmo_t::init(LAK_SPACE_MAT4&& pv)
+    {
+        projview = pv;
+        init();
+    }
+
     void gizmo_t::update(const LAK_SPACE_MAT4& transform)
     {
         init();
@@ -171,7 +189,7 @@ void main()
         modelmat = transform;
 
         mesh_t::element_t& vpos = mesh.elements["vPosition"];
-        LAK_SPACE_VEC4* vposp = vpos.init<LAK_SPACE_VEC4>(6);
+        LAK_SPACE_VEC4* vposp = vpos.init<LAK_SPACE_VEC4>(12);//6);
         vposp[0] = {0.0f, 0.0f, 0.0f, 1.0f};
         vposp[1] = {1.0f, 0.0f, 0.0f, 1.0f};
         
@@ -180,11 +198,20 @@ void main()
         
         vposp[4] = {0.0f, 0.0f, 0.0f, 1.0f};
         vposp[5] = {0.0f, 0.0f, 1.0f, 1.0f};
+
+        vposp[6] = {1.0f, 1.0f, 1.0f, 1.0f};
+        vposp[7] = {1.0f, 1.0f, 0.0f, 1.0f};
+        
+        vposp[8] = {1.0f, 1.0f, 1.0f, 1.0f};
+        vposp[9] = {0.0f, 1.0f, 1.0f, 1.0f};
+        
+        vposp[10] = {1.0f, 1.0f, 1.0f, 1.0f};
+        vposp[11] = {1.0f, 0.0f, 1.0f, 1.0f};
         vpos.normalized = false;
         vpos.active = true;
 
         mesh_t::element_t& vcol = mesh.elements["vColor"];
-        LAK_SPACE_VEC4* vcolp = vcol.init<LAK_SPACE_VEC4>(6);
+        LAK_SPACE_VEC4* vcolp = vcol.init<LAK_SPACE_VEC4>(12);//6);
         vcolp[0] = {1.0f, 0.0f, 0.0f, 1.0f};
         vcolp[1] = {1.0f, 0.0f, 0.0f, 1.0f};
         
@@ -193,6 +220,15 @@ void main()
         
         vcolp[4] = {0.0f, 0.0f, 1.0f, 1.0f};
         vcolp[5] = {0.0f, 0.0f, 1.0f, 1.0f};
+
+        vcolp[6] = {1.0f, 1.0f, 0.0f, 1.0f};
+        vcolp[7] = {1.0f, 1.0f, 0.0f, 1.0f};
+        
+        vcolp[8] = {0.0f, 1.0f, 1.0f, 1.0f};
+        vcolp[9] = {0.0f, 1.0f, 1.0f, 1.0f};
+        
+        vcolp[10] = {1.0f, 0.0f, 1.0f, 1.0f};
+        vcolp[11] = {1.0f, 0.0f, 1.0f, 1.0f};
         vcol.normalized = false;
         vcol.active = true;
 
@@ -267,7 +303,7 @@ void main()
         update(from, vector);
     }
 
-    void gizmo_t::draw(const LAK_SPACE_MAT4& projview)
+    void gizmo_t::draw()
     {
         mesh.shader->setUniform("projview", &projview[0][0]);
         mesh.shader->setUniform("model", &modelmat[0][0]);
@@ -275,12 +311,16 @@ void main()
         mesh.draw();
     }
 
-    void gizmo_t::draw(LAK_SPACE_MAT4&& projview)
+    void gizmo_t::draw(const LAK_SPACE_MAT4& pv)
     {
-        mesh.shader->setUniform("projview", &projview[0][0]);
-        mesh.shader->setUniform("model", &modelmat[0][0]);
-        mesh.update();
-        mesh.draw();
+        projview = pv;
+        draw();
+    }
+
+    void gizmo_t::draw(LAK_SPACE_MAT4&& pv)
+    {
+        projview = pv;
+        draw();
     }
 }
 

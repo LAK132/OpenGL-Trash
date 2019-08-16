@@ -12,6 +12,8 @@
 #include <lak/gizmo.hpp>
 #define LAK_OBJ_IMPLEM
 #include <lak/obj.hpp>
+#define LAK_STRIDE_VECTOR_IMPLEM
+#include <lak/stride_vector.hpp>
 #define IMGUI_SPLITTER_IMPLEM
 #include <imguisplitter.hpp>
 // #include <lak/transform.hpp>
