@@ -1,0 +1,12 @@
+.vscode/*
+.vs/*
+bin/*
+obj/*
+out/*
+ignore/*
+
+*.exe
+*.elf
+*.out
+*.log
+*.ini
