@@ -43,7 +43,7 @@ namespace lak
         stride_vector& operator=(const stride_vector& other);
         stride_vector& operator=(stride_vector&& other);
         vector<uint8_t> operator[](size_t idx) const;
-        template <typename T> 
+        template <typename T>
         stride_vector& operator=(const vector<T>& other)
         {
             stride = sizeof(T) / sizeof(uint8_t);
@@ -51,30 +51,18 @@ namespace lak
             memcpy(&(data[0]), &(other[0]), data.size());
             return *this;
         }
-        template <typename T> 
-        stride_vector& operator=(vector<T>&& other)
-        {
-            return *this = other;
-        }
-        template <typename T> 
+        template <typename T>
         inline T* get()
         {
             return (T*)&(data[0]);
         }
-        template <typename T> 
-        static stride_vector strideify(const vector<T> other)
-        {
-            stride_vector rtn;
-            return rtn = other;
-        }
-        template <typename T> 
-        static stride_vector strideify(vector<T>&& other)
+        template <typename T>
+        static stride_vector strideify(const vector<T>& other)
         {
             stride_vector rtn;
             return rtn = other;
         }
         static stride_vector interleave(const vector<stride_vector*>& vecs);
-        static stride_vector interleave(vector<stride_vector*>&& vecs);
     };
 }
 
@@ -94,15 +82,13 @@ namespace lak
     }
 
     stride_vector::stride_vector(const stride_vector &other)
+    : stride(other.stride), data(other.data)
     {
-        stride = other.stride;
-        data = other.data;
     }
 
     stride_vector::stride_vector(stride_vector &&other)
+    : stride(other.stride), data(std::move(other.data))
     {
-        stride = other.stride;
-        data = other.data;
     }
 
     void stride_vector::init(size_t size)
@@ -126,7 +112,9 @@ namespace lak
 
     stride_vector &stride_vector::operator=(stride_vector &&other)
     {
-        return *this = other;
+        stride = other.stride;
+        data = std::move(other.data);
+        return *this;
     }
 
     vector<uint8_t> stride_vector::operator[](size_t idx) const
@@ -149,22 +137,15 @@ namespace lak
         stride_vector rtn(size);
         for(size_t i = 0; i < maxlen; i++)
         {
-            for(auto it = vecs.begin(); it != vecs.end(); it++)
+            for (const auto &it : vecs)
             {
-                // stride_vector& svec = **it;
-                vector<uint8_t>& vec = (**it)[i];
-                for(auto it2 = vec.begin(); it2 != vec.end(); it2++)
+                const vector<uint8_t> vec = (*it)[i];
+                for (auto it2 : vec)
                 {
-                    rtn.data.push_back(*it2);
+                    rtn.data.push_back(it2);
                 }
             }
         }
-        return rtn;
-    }
-
-    stride_vector stride_vector::interleave(vector<stride_vector*>&& vecs)
-    {
-        stride_vector& rtn = interleave(vecs); // idk if this is required, but better safe than sorry
         return rtn;
     }
 }

@@ -21,34 +21,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+#ifndef LAK_QUEUE_H
+#define LAK_QUEUE_H
 
 #include <memory>
 #include <mutex>
 
-#ifndef LAK_QUEUE_H
-#define LAK_QUEUE_H
-
 namespace lak
 {
-    using std::mutex;
-    using std::lock_guard;
-    using std::shared_ptr;
-    using std::weak_ptr;
-    using std::make_shared;
-    using std::unique_ptr;
-    using std::make_unique;
-
     struct queue_t;
     struct _ticket;
-    typedef shared_ptr<_ticket> ticket_t;
+    using ticket_t = std::shared_ptr<_ticket>;
 
     struct _ticket
     {
     private:
-        shared_ptr<mutex> mtx = make_shared<mutex>();
-        unique_ptr<lock_guard<mutex>> guard;
+        shared_ptr<std::mutex> mtx = make_shared<std::mutex>();
+        std::unique_ptr<std::lock_guard<std::mutex>> guard;
     public:
-        _ticket(){ guard = make_unique<lock_guard<mutex>>(*mtx); }
+        _ticket()
+        {
+            guard = std::make_unique<std::lock_guard<std::mutex>>(*mtx);
+        }
         friend queue_t;
     };
 
@@ -56,12 +50,12 @@ namespace lak
     {
     private:
         weak_ptr<_ticket> tail;
-        mutex _lock;
+        std::mutex _lock;
     public:
         ticket_t lock()
         {
             _lock.lock();
-            shared_ptr<mutex> mtx = nullptr;
+            shared_ptr<std::mutex> mtx = nullptr;
             {
                 ticket_t oldt = tail.lock();
                 if(oldt != nullptr) mtx = oldt->mtx;
@@ -70,7 +64,7 @@ namespace lak
             tail = newt;
             _lock.unlock();
 
-            if(mtx != nullptr) lock_guard<mutex> wait(*mtx);
+            if(mtx != nullptr) std::lock_guard<std::mutex> wait(*mtx);
             return newt;
         }
     };

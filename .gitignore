@@ -11,3 +11,4 @@ ignore/*
 *.log
 *.ini
 *.pdb
+*.o

@@ -46,9 +46,10 @@ struct model_t : public lak::referenceFrame_t
     shared_ptr<lak::mesh_t> mesh;
     string modelUniformName = "model";
     void update() { mesh->update(); }
-    void draw(bool reversed = false) { 
+    void draw(bool reversed = false)
+    {
         mesh->shader->setUniform(modelUniformName, &getTransform(false, reversed)[0][0]);
-        mesh->draw(); 
+        mesh->draw();
     }
 };
 
@@ -59,13 +60,14 @@ struct light_t : public lak::referenceFrame_t
 
 struct camera_t : public lak::referenceFrame_t
 {
-    glm::mat4 projection;  
+    glm::mat4 projection;
     glm::mat4 view;
-    glm::mat4& update() {
-        glm::mat4& trans = getTransform();
-        glm::vec3& eye = glm::vec3(trans * lak::transform_t::WUP);
-        glm::vec3& center = glm::vec3(trans * (lak::transform_t::ZUP + lak::transform_t::WUP));
-        glm::vec3& up = glm::vec3(trans * lak::transform_t::YUP);
+    glm::mat4& update()
+    {
+        const glm::mat4 trans = getTransform();
+        const glm::vec3 eye = glm::vec3(trans * lak::transform_t::WUP);
+        const glm::vec3 center = glm::vec3(trans * (lak::transform_t::ZUP + lak::transform_t::WUP));
+        const glm::vec3 up = glm::vec3(trans * lak::transform_t::YUP);
         view = glm::lookAt(eye, center, up);
         return view;
     }
@@ -87,7 +89,7 @@ struct scene_t
     shared_ptr<model_t> ball;
 
     vector<lak::gizmo_t> gizmos;
-    // void draw() { 
+    // void draw() {
     //     ball->draw();
     //     for(auto it = blocks.begin(); it != blocks.end(); it++)
     //         (*it)->draw();
@@ -116,7 +118,7 @@ struct userData_t
     float clearCol[4] = {0.0f, 0.3125f, 0.3125f, 1.0f};
 
     scene_t scene;
-    
+
     uint32_t screenw;
     uint32_t screenh;
 

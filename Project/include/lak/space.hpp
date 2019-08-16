@@ -54,7 +54,7 @@ SOFTWARE.
 #endif
 #ifndef LAK_SPACE_TRANSPOSE
 #define LAK_SPACE_TRANSPOSE glm::transpose
-#endif 
+#endif
 #ifndef LAK_SPACE_NOMALIZE
 #define LAK_SPACE_NOMALIZE glm::normalize
 #endif
@@ -64,8 +64,8 @@ SOFTWARE.
 #include <imgui.h>
 #endif
 
-#ifndef M_2_PI
-#define M_2_PI  6.28318530717958647692528676655900577
+#ifndef M_TAU
+#define M_TAU  6.28318530717958647692528676655900577
 #endif
 #ifndef M_PI
 #define M_PI    3.14159265358979323846264338327950288
@@ -280,8 +280,8 @@ namespace lak
     const LAK_SPACE_VEC4 transform_t::WUP = {0.0f, 0.0f, 0.0f, 1.0f};
     const LAK_SPACE_MAT4 transform_t::IDEN = {
         1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f, 
-        0.0f, 0.0f, 1.0f, 0.0f, 
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 1.0f
     };
 
@@ -289,9 +289,12 @@ namespace lak
     {
         rotVel += rotAccel * delta;
         rot += rotVel * delta;
-        if(rot.z > M_2_PI || rot.z < -M_2_PI) rot.z = fmod(rot.z, M_2_PI);
-        if(rot.y > M_2_PI || rot.y < -M_2_PI) rot.y = fmod(rot.y, M_2_PI);
-        if(rot.x > M_2_PI || rot.x < -M_2_PI) rot.x = fmod(rot.x, M_2_PI);
+        if      (rot.x < 0.0f)  rot.x = M_TAU - std::fmod(std::abs(rot.x), M_TAU);
+        else if (rot.x > M_TAU) rot.x =         std::fmod(         rot.x , M_TAU);
+        if      (rot.y < 0.0f)  rot.y = M_TAU - std::fmod(std::abs(rot.y), M_TAU);
+        else if (rot.y > M_TAU) rot.y =         std::fmod(         rot.y , M_TAU);
+        if      (rot.z < 0.0f)  rot.z = M_TAU - std::fmod(std::abs(rot.z), M_TAU);
+        else if (rot.z > M_TAU) rot.z =         std::fmod(         rot.z , M_TAU);
         // addRotation(rot.z, ZUP);
         // addRotation(rot.y, YUP);
         // setRotation(rot.x, XUP);
@@ -372,7 +375,7 @@ namespace lak
         }
     }
 
-    #ifdef LAK_SPACE_IMGUI    
+    #ifdef LAK_SPACE_IMGUI
     template<>
     void TransformView<transform_t*>(transform_t* transform)
     {

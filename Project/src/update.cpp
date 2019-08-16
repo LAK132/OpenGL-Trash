@@ -45,7 +45,7 @@ void modelFromOBJ(istream& strm, shared_ptr<model_t> model)
         }
     }
 }
-    
+
 /*
 * model:       model transform     model -> world      updated on model change
 * view:        camera transform    world -> camera     updated on camera change
@@ -126,7 +126,7 @@ void update(lak::loopData* ld)
     {
         case STARTUP: {
             // Make sure we have OpenGL context in this thread
-            if(!ld->updateHasContext) 
+            if(!ld->updateHasContext)
             {
                 ld->updateNeedsContext = true;
                 break;
@@ -146,7 +146,8 @@ void update(lak::loopData* ld)
             ud.scene.cameraBoom->transform.pos.z = -2.2f;
             ud.scene.camera->transform.rot.x = -0.3f;
 
-            ud.scene.shader->setUniform("view", &ud.scene.camera->getTransform());
+            const auto view_transform = ud.scene.camera->getTransform();
+            ud.scene.shader->setUniform("view", &view_transform);
 
             // setup camera perspective
             ud.scene.camera->projection = glm::perspective(glm::pi<float>() / 2.0f, (float)ud.screenw / (float)ud.screenh, 0.01f, 100.0f);
@@ -235,7 +236,7 @@ void update(lak::loopData* ld)
                         lak::texparam_t(GL_TEXTURE_WRAP_S, GL_REPEAT),
                         lak::texparam_t(GL_TEXTURE_WRAP_T, GL_REPEAT)
                     });
-                    
+
                     shared_ptr<model_t> _coin = make_shared<model_t>();
                     _coin->mesh = make_shared<lak::mesh_t>();
                     modelFromOBJ(coinstrm, _coin);
@@ -288,12 +289,16 @@ void update(lak::loopData* ld)
                 ud.scene.shader->setUniform(lightname+".position", &ud.scene.lights[i].transform.pos);
                 ud.scene.shader->setUniform(lightname+".color", &ud.scene.lights[i].color);
             }
-            ud.scene.shader->setUniform("ambient", &glm::vec4(0.1f, 0.1f, 0.1f, 1.0f));
-            ud.scene.shader->setUniform("diffuse", &glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-            ud.scene.shader->setUniform("specular", &glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            auto temp_vec = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
+            ud.scene.shader->setUniform("ambient", &temp_vec);
+            temp_vec = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+            ud.scene.shader->setUniform("diffuse", &temp_vec);
+            temp_vec = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+            ud.scene.shader->setUniform("specular", &temp_vec);
             float shininess = 100.0f;
             ud.scene.shader->setUniform("shininess", &shininess);
-            ud.scene.shader->setUniform("model", &glm::mat4(1.0f));
+            auto temp_mat = glm::mat4(1.0f);
+            ud.scene.shader->setUniform("model", &temp_mat);
 
             // We don't need the OpenGL context in this thread anymore
             ld->updateNeedsContext = false;
@@ -318,7 +323,7 @@ void update(lak::loopData* ld)
                 block->transform.update(ld->updateDelta);
             for(auto& coin : scene.coins)
                 coin->transform.update(ld->updateDelta);
-            
+
             scene.ball->transform.update(ld->updateDelta);
 
             for(auto it = scene.coins.begin(); it != scene.coins.end();)
@@ -343,7 +348,7 @@ void update(lak::loopData* ld)
             if(!onTrack) state = LOSS;
 
             ImGui::Text("Score");
-            ImGui::Text("%x", ud.scene.coins_reset.size() - ud.scene.coins.size());
+            ImGui::Text("%zx", ud.scene.coins_reset.size() - ud.scene.coins.size());
         } break;
         case WIN: {
             auto& scene = ud.scene;
@@ -379,7 +384,8 @@ void update(lak::loopData* ld)
         } break;
     }
 
-    /*if(ImGui::TreeNode("Player Pos"))
+    /*
+    if(ImGui::TreeNode("Player Pos"))
     {
         lak::TransformView(ud.scene.playerPos);
         ImGui::TreePop();
@@ -414,7 +420,8 @@ void update(lak::loopData* ld)
         for(auto it = ud.scene.blocks.begin(); it != ud.scene.blocks.end(); it++)
             lak::TransformView(&(*it)->transform);
         ImGui::TreePop();
-    }*/
+    }
+    // */
 
     ImGui::Text("%f", ld->updateDelta);
     ImGui::Text("%f", ld->drawDelta);
@@ -447,7 +454,7 @@ void update(lak::loopData* ld)
     // {
 
     // }
-    
+
     // If rightMenuOpen draw a small menu
     // if(rightMenuOpen)
     // {
