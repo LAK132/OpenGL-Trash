@@ -78,21 +78,21 @@ namespace lak
                     case GL_FLOAT: {
                         switch(glformat)
                         {
-                            case GL_R: {
+                            case GL_RED: {
                                 pixels[i] = {pix[i]};
                             } break;
                             case GL_RG: {
-                                size_t j = i * 2; 
+                                size_t j = i * 2;
                                 pixels[i] = {pix[j], pix[j+1]};
                             } break;
                             case GL_RGB:
                             case GL_BGR: {
-                                size_t j = i * 3; 
+                                size_t j = i * 3;
                                 pixels[i] = {pix[j], pix[j+1], pix[j+2]};
                             } break;
                             case GL_RGBA:
                             case GL_BGRA: {
-                                size_t j = i * 4; 
+                                size_t j = i * 4;
                                 pixels[i] = {pix[j], pix[j+1], pix[j+2], pix[j+3]};
                             } break;
                             default: DEBUG("INVALID TYPE\n"); return;
@@ -121,7 +121,7 @@ namespace lak
             pixels = pix;
             resize(W, pix.size() / W); // resize AFTER copy
         }
-        image_t(size_t W, vector<col_t>&& pix) 
+        image_t(size_t W, vector<col_t>&& pix)
         {
             pixels = pix;
             resize(W, pix.size() / W); // resize AFTER copy
